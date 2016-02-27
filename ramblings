@@ -1,0 +1,97 @@
+So it should be possible to build a better forum. I am going to vomit up what I have in my head so far.
+
+The thing I am trying to go for is polite and thoughtful discourse between
+groups that otherwise might have hated each other. I am not at all certain how
+to make that work. I want this to work without hand selecting a group. I want
+to be able to take people from 4chan or youtube, and turn them into productive
+members of the internet.
+
+
+------------------------
+DISPLAY ORDER
+------------------------
+The core lever I have in mind is putting behaviour that I like at the top, and
+behaviour that I don't like at the bottom. Or some equivalent. Maybe a sidebar?
+Anyway, it would arranged fractally: the response to a post that I like most
+will apear as the top child, so on so forth for all decendents.
+
+How much a post is favoured is determined by summing the scores of all its 
+decendants. So if someone calls someone else a bad name, and someone takes them
+down in a very highly rated manner, we all get to see the insult? hmm... 
+Okay, decendants add iff the post is positive on its own. That makes sense. 
+This makes it impossible to gain credit for dogpiling already unpopular people.
+So the only incentivized method of disagreeing with hated people is to downvote
+them.
+
+There is a configurable sidebar which displays posts (not threads) in according
+to the configurations. By default, it shows things liked by your ingroup, but
+you can set for a bunch of things.
+------------------------
+VOTING
+------------------------
+
+Three votes: ingroup like, outgroup like, and dislike.
+
+The results of voting are mostly private.
+
+------------------------
+GRAPH THEORY
+------------------------
+
+The results of voting are a bipartite graph of posts, users, and users->posts.
+This is projected on to the users side of the graph, and community clusters
+are found. If your group gets big enough, you are told you are a part of it.
+you can choose to hide your membership if you want to keep your identity small.
+
+Likes are a normal edge, dislikes are a negative edge, and outgroup likes are
+not an edge.
+
+Maximum flows between groups are calculated, to determine who hates who. This
+part is important.
+
+-------------------------
+RANKING
+-------------------------
+each like is normally worth +1. However, if likes come from two different 
+groups, they are worth more depending on how far apart the groups are.
+This is the inverse of the maximum flow between the two groups, times some 
+coefficientwith, some cap, at maybe 5 or 10, in the case of groups with 0 or 
+negative maximum flow.
+
+There should also be some magic scaling based on the size of the groups.
+
+-------------------------
+VULNERABILITIES
+-------------------------
+
+What could happen that makes this not work?
+
+No participation. No one likes the system, because it doesn't give them anything.
+
+Homogenity. Everyone likes all the same things, and no useful groups are formed.
+
+Defect Defect. Everyone coordinates to hate the outgroup, and no bridges are built.
+
+Cat posters. Pointless junk clogs the forum, because it is the only thing people
+agree on.
+
+So. Lets crack these open. The first one I think is the most important. In addition
+to helping in the aggregate, every additional member has to gain from it. This
+will be hard. 
+
+The second should be pretty easy to break, I don't think that it even needs
+anything new. Enemies who have even the slightest thing to offer to the main
+group will rocket to the tops of the rankings nearly instantaneously. This
+should attract more enemies.
+
+Defect Defect should be in the same boat. ANYONE breaking ranks to cooperate
+will rocket to the tops of the post listings.
+
+Cat posters. This is hard. How do I distinguish between the greatest speech of
+all time, and a pun thread? I could change the voting, to carve between "like"
+and "respect". But Then I have lots of axes. I have ingroup/outgroup, like/dislike
+and respect/disrespect. So I want 
+"Support" (+respect,+ingroup,+like)
+"like" (+like)
+"Respect" (+respect)
+"dislike" (-respect,-ingroup,-like)
