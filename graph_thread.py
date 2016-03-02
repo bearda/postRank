@@ -5,8 +5,10 @@
 #   content     this is the string containing the text/html for the post
 #   parent      this is the postObj that this postObj is in reply to
 #   scores:
-#       popularity  dict of popularities by group
-#       respect
+#       likes   list of users who liked this
+#       respects
+#       support
+#       dislike
 #   ID          This is the post ID, for accounting purposes
 #   children    This is the list of child postObj
 
@@ -24,29 +26,27 @@ class postObj:
         #self.initRespect()
         #self.initPopularity()
     
-    def addRespect(self, group):
-        self.respect[group] = self.respect[group] + 1
+    def like(self, group):
+        for group in user.membership:
+            self.like[group] += user.membership.group
 
-    def addPopularity(self, group):
-        self.popularity[group] = self.popularity[group] + 1
+    def respect(self, user):
+        for group in user.membership:
+            self.respect[group] += user.membership.group
 
-    def subRespect(self, group):
-        self.respect[group] = self.respect[group] - 1
+    def support(self, group):
+        for group in user.membership:
+            self.respect[group] += user.membership.group
 
-    def subPopularity(self, group):
-        self.popularity[group] = self.popularity[group] - 1
+    def dislike(self, group):
+        for group in user.membership:
+            self.dislike[group] += user.membership.group
 
     def addChild(self, child):
         self.children.append(child)
 
     def delChild(self, child):
         #TODO: adjust ranking
-        for group in child.popularity:
-            while child.popularity[group] > 0:
-                child.subPopularity(group)
-        for group in child.respect:
-            while child.respect[group] > 0:
-                child.subRespect(group)
         self.children.remove(child)
 
 #A user. they make posts
@@ -85,7 +85,6 @@ class user:
 
 class group:
 
-
     def __init__ (self, groupID):
         self.ID = groupID
         self.users = []
@@ -99,5 +98,29 @@ class group:
             return self.connections[connectionID]
         return 0
 
+#this has children, users, groups, and methods for displaying them
+class board:
 
+    def __init__ (self, users, groups, post):
+        self.users = users
+        self.groups = groups
+        self.topPost = post
 
+    def addUser (self, user):
+        if user not in self.users:
+            self.users.append(user)
+
+    def delUser (self, user):
+        self.users.remove(user)
+
+    def showPosts (self):
+        self.showPost(self.topPost, 0)
+
+    def showPost (self, post, depth):
+        indent = "|--" * depth
+        print indent + post.content
+        for child in post.children:
+            self.showPost(child, depth + 1)
+
+    def setGroups(self, groups):
+        self.groups = groups
