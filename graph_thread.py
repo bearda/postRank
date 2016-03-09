@@ -1,3 +1,4 @@
+from Tkinter import *
 #postObj
 #
 # members:
@@ -17,7 +18,7 @@ class postObj:
 
     def __init__ (self, user, content, parent):
         self.user = user
-        self.content = text
+        self.content = content
         self.parent = parent
         self.ID = 0 #TODO global incrementing variable
         self.children = []
@@ -64,7 +65,7 @@ class user:
         self.username = username
         self.email = "" #no email by default
         self.ID = 0 #TODO: give unique IDs
-        self.initGroups()
+        #self.initGroups()
 
     def makePost(self, content, parent):
         post = postObj(self, content, parent)
@@ -88,7 +89,11 @@ class group:
     def __init__ (self, groupID):
         self.ID = groupID
         self.users = []
+        self.initConnections()
         self.setConnection(self.ID, 1) 
+
+    def initConnections(self):
+        self.connections = {}
 
     def setConnection(self, connectionID, strength):
         self.connections[connectionID] = strength
@@ -105,6 +110,7 @@ class board:
         self.users = users
         self.groups = groups
         self.topPost = post
+        self.window = Tk()
 
     def addUser (self, user):
         if user not in self.users:
@@ -114,13 +120,48 @@ class board:
         self.users.remove(user)
 
     def showPosts (self):
-        self.showPost(self.topPost, 0)
+        self.showPost(self.topPost, self.window, 0)
+        self.window.mainloop()
 
-    def showPost (self, post, depth):
-        indent = "|--" * depth
-        print indent + post.content
+    def showPost (self, post, window, depth):
+        indent = 30 * depth
+        text = StringVar()
+        postFrame = Frame(window)
+        postFrame.grid(padx=(indent,10))
+        windowPost = Message(postFrame, textvariable=text)
+        windowPost.grid(column=0)
+        postButton = Button(postFrame, text="reply",
+                command = lambda: self.postReply(post))
+        postButton.grid(row=0, column=1)
+        text.set(post.content)
         for child in post.children:
-            self.showPost(child, depth + 1)
+            self.showPost(child, window, depth + 1)
 
     def setGroups(self, groups):
         self.groups = groups
+
+    def postReply(self, post):
+        post.user.makePost("temp reply", post)
+        self.window.destroy()
+        self.window = Tk()
+        self.showPosts()
+
+reds = group(0)
+blues = group(1)
+
+reds.setConnection(blues.ID,2)
+blues.setConnection(reds.ID,2)
+
+groups = [reds, blues]
+
+alice = user("Alice")
+bob = user("Bob")
+
+users = [alice, bob]
+
+thread = postObj(alice, "Alice says hello!", 0)
+bob.makePost("Bob says grr!", thread)
+alice.makePost("That isn't nice!", thread.children[0])
+
+forum = board(users,groups,thread)
+forum.showPosts()
