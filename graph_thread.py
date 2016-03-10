@@ -110,7 +110,7 @@ class board:
         self.users = users
         self.groups = groups
         self.topPost = post
-        self.window = Tk()
+        self.curUser = users[0]
 
     def addUser (self, user):
         if user not in self.users:
@@ -119,9 +119,41 @@ class board:
     def delUser (self, user):
         self.users.remove(user)
 
+    def changeCurUser(self, user):
+        self.curUser = user
+        self.curUserText.set(self.curUser.username)
+
+    def startWindows(self):
+        self.window = Tk()
+        self.userWindow = Toplevel(self.window)
+        self.showPosts()
+        self.showUsers()
+        self.window.mainloop()
+
+
+    def showUsers(self):
+        #show current user
+        curUserFrame = Frame(self.userWindow)
+        curUserFrame.grid()
+        self.curUserText = StringVar()
+        curUserMsg = Message(curUserFrame, textvariable=self.curUserText)
+        self.curUserText.set(self.curUser.username)
+        curUserMsg.grid()
+
+        #show all the users
+        for user in self.users:
+            self.showUser(user)
+
+    def showUser(self, user):
+        userFrame = Frame(self.userWindow)
+        userFrame.grid()
+
+        userBtn = Button(userFrame, text=user.username,
+                          command = lambda: self.changeCurUser(user))
+        userBtn.grid(padx=20,pady=10)
+
     def showPosts (self):
         self.showPost(self.topPost, self.window, 0)
-        self.window.mainloop()
 
     def showPost (self, post, window, depth):
         indent = 30 * depth
@@ -130,9 +162,23 @@ class board:
         postFrame.grid(padx=(indent,10))
         windowPost = Message(postFrame, textvariable=text)
         windowPost.grid(column=0)
-        postButton = Button(postFrame, text="reply",
+        postButtons = Frame(postFrame)
+        postButtons.grid(row=0, column=1)
+        replyButton = Button(postButtons, text="reply",
                 command = lambda: self.postReply(post))
-        postButton.grid(row=0, column=1)
+        replyButton.grid(row=0, column=0)
+        likeButton = Button(postButtons, text="like",
+                                command = post.like)
+        likeButton.grid(row=0, column=1)
+        supportButton = Button(postButtons, text="support",
+                                command = post.support)
+        supportButton.grid(row=0, column=2)
+        respectButton = Button(postButtons, text="respect",
+                                command = post.respect)
+        respectButton.grid(row=0, column=3)
+        dislikeButton = Button(postButtons, text="dislike",
+                                command = post.dislike)
+        dislikeButton.grid(row=0, column=4)
         text.set(post.content)
         for child in post.children:
             self.showPost(child, window, depth + 1)
@@ -143,8 +189,7 @@ class board:
     def postReply(self, post):
         post.user.makePost("temp reply", post)
         self.window.destroy()
-        self.window = Tk()
-        self.showPosts()
+        self.startWindows()
 
 reds = group(0)
 blues = group(1)
@@ -164,4 +209,4 @@ bob.makePost("Bob says grr!", thread)
 alice.makePost("That isn't nice!", thread.children[0])
 
 forum = board(users,groups,thread)
-forum.showPosts()
+forum.startWindows()
