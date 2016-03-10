@@ -111,6 +111,8 @@ class board:
         self.groups = groups
         self.topPost = post
         self.window = Tk()
+        self.userWindow = Toplevel(self.window)
+        self.curUser = users[0]
 
     def addUser (self, user):
         if user not in self.users:
@@ -119,8 +121,25 @@ class board:
     def delUser (self, user):
         self.users.remove(user)
 
+    def showUsers(self):
+        for user in self.users:
+            self.showUser(user)
+
+    def showUser(self, user):
+        userText = StringVar()
+
+        userFrame = Frame(self.userWindow)
+        userFrame.grid()
+
+        userMsg = Message(userFrame, textvariable=userText)
+        userMsg.grid()
+        userText.set(user.username)
+
+
+
     def showPosts (self):
         self.showPost(self.topPost, self.window, 0)
+        self.showUsers()
         self.window.mainloop()
 
     def showPost (self, post, window, depth):
@@ -130,9 +149,23 @@ class board:
         postFrame.grid(padx=(indent,10))
         windowPost = Message(postFrame, textvariable=text)
         windowPost.grid(column=0)
-        postButton = Button(postFrame, text="reply",
+        postButtons = Frame(postFrame)
+        postButtons.grid(row=0, column=1)
+        replyButton = Button(postButtons, text="reply",
                 command = lambda: self.postReply(post))
-        postButton.grid(row=0, column=1)
+        replyButton.grid(row=0, column=0)
+        likeButton = Button(postButtons, text="like",
+                                command = post.like)
+        likeButton.grid(row=0, column=1)
+        supportButton = Button(postButtons, text="support",
+                                command = post.support)
+        supportButton.grid(row=0, column=2)
+        respectButton = Button(postButtons, text="respect",
+                                command = post.respect)
+        respectButton.grid(row=0, column=3)
+        dislikeButton = Button(postButtons, text="dislike",
+                                command = post.dislike)
+        dislikeButton.grid(row=0, column=4)
         text.set(post.content)
         for child in post.children:
             self.showPost(child, window, depth + 1)
