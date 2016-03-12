@@ -24,24 +24,44 @@ class postObj:
         self.children = []
 
         #TODO: initialize dicto with all zero members
-        #self.initRespect()
-        #self.initPopularity()
+        self.initScores()
     
-    def like(self, group):
+    def initScores(self):
+        self.groups = []
+        self.likes = {}
+        self.respects = {}
+        self.supports = {}
+        self.dislikes = {}
+        for group in self.user.membership:
+            self.groups.append(group)
+            self.likes[group] = 0
+            self.respects[group] = 0
+            self.supports[group] = 0
+            self.dislikes[group] = 0
+
+    def like(self, user):
         for group in user.membership:
-            self.like[group] += user.membership.group
+            if group not in self.groups:
+                self.likes[group] = 0
+            self.likes[group] += user.membership[group]
 
     def respect(self, user):
         for group in user.membership:
-            self.respect[group] += user.membership.group
+            if group not in self.groups:
+                self.respects[group] = 0
+            self.respects[group] += user.membership[group]
 
-    def support(self, group):
+    def support(self, user):
         for group in user.membership:
-            self.respect[group] += user.membership.group
+            if group not in self.groups:
+                self.supports[group] = 0
+            self.supports[group] += user.membership[group]
 
-    def dislike(self, group):
+    def dislike(self, user):
         for group in user.membership:
-            self.dislike[group] += user.membership.group
+            if group not in self.groups:
+                self.dislikes[group] = 0
+            self.dislikes[group] += user.membership[group]
 
     def addChild(self, child):
         self.children.append(child)
@@ -65,7 +85,7 @@ class user:
         self.username = username
         self.email = "" #no email by default
         self.ID = 0 #TODO: give unique IDs
-        #self.initGroups()
+        self.initGroups()
 
     def makePost(self, content, parent):
         post = postObj(self, content, parent)
@@ -73,6 +93,12 @@ class user:
 
     def setEmail(self, email):
         self.email = email
+
+    def initGroups(self):
+        self.membership = {}
+
+    def setGroups(self, groups):
+        self.membership = groups
 
 #A group. This is a list of users, and a dict of connection strengths
 #to all other groups.
@@ -168,16 +194,16 @@ class board:
                 command = lambda: self.postReply(post))
         replyButton.grid(row=0, column=0)
         likeButton = Button(postButtons, text="like",
-                                command = post.like)
+                command = lambda: self.likePost(post))
         likeButton.grid(row=0, column=1)
         supportButton = Button(postButtons, text="support",
-                                command = post.support)
+                command = lambda: self.supportPost(post))
         supportButton.grid(row=0, column=2)
         respectButton = Button(postButtons, text="respect",
-                                command = post.respect)
+                command = lambda: self.respectPost(post))
         respectButton.grid(row=0, column=3)
         dislikeButton = Button(postButtons, text="dislike",
-                                command = post.dislike)
+                command = lambda: self.dislikePost(post))
         dislikeButton.grid(row=0, column=4)
         text.set(post.content)
         for child in post.children:
@@ -191,6 +217,19 @@ class board:
         self.window.destroy()
         self.startWindows()
 
+    def likePost(self, post):
+        post.like(self.curUser)
+        print post.likes
+    def respectPost(self, post):
+        post.respect(self.curUser)
+        print post.likes
+    def supportPost(self, post):
+        post.support(self.curUser)
+        print post.likes
+    def dislikePost(self, post):
+        post.dislike(self.curUser)
+        print post.likes
+
 reds = group(0)
 blues = group(1)
 
@@ -198,9 +237,13 @@ reds.setConnection(blues.ID,2)
 blues.setConnection(reds.ID,2)
 
 groups = [reds, blues]
+redMember = {reds:1,blues:0}
+blueMember = {reds:0,blues:1}
 
 alice = user("Alice")
+alice.setGroups(redMember)
 bob = user("Bob")
+bob.setGroups(blueMember)
 
 users = [alice, bob]
 
