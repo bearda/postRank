@@ -63,6 +63,15 @@ class postObj:
                 self.dislikes[group] = 0
             self.dislikes[group] += user.membership[group]
 
+    def countLikes(self):
+        return sum(x[1] for x in self.likes.items())
+    def countRespects(self):
+        return sum(x[1] for x in self.respects.items())
+    def countSupports(self):
+        return sum(x[1] for x in self.supports.items())
+    def countDislikes(self):
+        return sum(x[1] for x in self.dislikes.items())
+
     def addChild(self, child):
         self.children.append(child)
 
@@ -184,12 +193,23 @@ class board:
     def showPost (self, post, window, depth):
         indent = 30 * depth
         text = StringVar()
+        data = StringVar()
+
         postFrame = Frame(window)
         postFrame.grid(padx=(indent,10))
-        windowPost = Message(postFrame, textvariable=text)
-        windowPost.grid(column=0)
+
+        dataMsg = Message(postFrame, textvariable=data, aspect=3000)
+        data.set("Poster: %s  Likes: %d  Respects: %d  Supports: %d"
+                "  Dislikes: %d" % (post.user.username, post.countLikes(),
+                                    post.countRespects(), post.countSupports(),
+                                    post.countDislikes()))
+        dataMsg.grid(row=0,sticky="ew",columnspan=3)
+
+        contentMsg = Message(postFrame, textvariable=text)
+        contentMsg.grid(row=1, column=0)
+
         postButtons = Frame(postFrame)
-        postButtons.grid(row=0, column=1)
+        postButtons.grid(row=1, column=1)
         replyButton = Button(postButtons, text="reply",
                 command = lambda: self.postReply(post))
         replyButton.grid(row=0, column=0)
