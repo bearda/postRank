@@ -161,8 +161,10 @@ class board:
     def startWindows(self):
         self.window = Tk()
         self.userWindow = Toplevel(self.window)
+        self.rankWindow = Toplevel(self.window)
         self.showPosts()
         self.showUsers()
+        self.showRankWindow()
         self.window.mainloop()
 
 
@@ -186,6 +188,31 @@ class board:
         userBtn = Button(userFrame, text=user.username,
                           command = lambda: self.changeCurUser(user))
         userBtn.grid(padx=20,pady=10)
+
+    def showRankWindow(self):
+        hintText = StringVar()
+        hintMsg = Message(self.rankWindow, textvariable=hintText, aspect=500)
+        hintMsg.grid()
+        hintText.set("Click on the desired sorting method")
+
+        btnFrame = Frame(self.rankWindow)
+        btnFrame.columnconfigure(0, weight=1)
+        btnFrame.grid(sticky=E+W)
+        
+        byLikes = Button(btnFrame, text="likes", 
+                command=self.setSortByLikes)
+        byLikes.columnconfigure(0, weight=1)
+        byLikes.grid(sticky=E+W)
+        
+        byRespects = Button(btnFrame, text="Respects", 
+                command=self.setSortByRespects)
+        byRespects.columnconfigure(0, weight=1)
+        byRespects.grid(sticky=E+W)
+        
+        bySupports = Button(btnFrame, text="Supports", 
+                command=self.setSortBySupports)
+        bySupports.columnconfigure(0, weight=1)
+        bySupports.grid(sticky=E+W)
 
     def showPosts (self):
         self.showPost(self.topPost, self.window, 0)
@@ -234,21 +261,36 @@ class board:
 
     def postReply(self, post):
         post.user.makePost("temp reply", post)
+        self.refreshWindows()
+
+    def refreshWindows(self):
         self.window.destroy()
         self.startWindows()
 
     def likePost(self, post):
         post.like(self.curUser)
-        print post.likes
+        self.refreshWindows()
     def respectPost(self, post):
         post.respect(self.curUser)
-        print post.likes
+        self.refreshWindows()
     def supportPost(self, post):
         post.support(self.curUser)
-        print post.likes
+        self.refreshWindows()
     def dislikePost(self, post):
         post.dislike(self.curUser)
-        print post.likes
+        self.refreshWindows()
+
+    def setSortByLikes(self):
+        self.sortByLikes(self.topPost)
+        self.refreshWindows()
+    def sortByLikes(self, post):
+        post.children = sorted(post.children, reverse=True,
+                key = self.sortByLikes)
+        return post.countLikes()
+    def setSortByRespects(self):
+        return
+    def setSortBySupports(self):
+        return
 
 reds = group(0)
 blues = group(1)
