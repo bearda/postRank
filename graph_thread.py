@@ -288,9 +288,19 @@ class board:
                 key = self.sortByLikes)
         return post.countLikes()
     def setSortByRespects(self):
-        return
+        self.sortByRespects(self.topPost)
+        self.refreshWindows()
+    def sortByRespects(self, post):
+        post.children = sorted(post.children, reverse=True,
+                key = self.sortByRespects)
+        return post.countRespects()
     def setSortBySupports(self):
-        return
+        self.sortBySupports(self.topPost)
+        self.refreshWindows()
+    def sortBySupports(self, post):
+        post.children = sorted(post.children, reverse=True,
+                key = self.sortBySupports)
+        return post.countSupports()
 
 reds = group(0)
 blues = group(1)
