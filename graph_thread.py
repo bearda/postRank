@@ -25,6 +25,7 @@ class postObj:
 
         #TODO: initialize dicto with all zero members
         self.initScores()
+        self.score = 0 #this is a dummy int used by sorting methods
     
     def initScores(self):
         self.groups = []
@@ -162,6 +163,8 @@ class board:
         self.window = Tk()
         self.userWindow = Toplevel(self.window)
         self.rankWindow = Toplevel(self.window)
+        self.mainFrame = Frame(self.window)
+        self.mainFrame.grid()
         self.showPosts()
         self.showUsers()
         self.showRankWindow()
@@ -214,8 +217,13 @@ class board:
         bySupports.columnconfigure(0, weight=1)
         bySupports.grid(sticky=E+W)
 
+        byHardStuff = Button(btnFrame, text="HardStuff", 
+                command=self.setSortByHardStuff)
+        byHardStuff.columnconfigure(0, weight=1)
+        byHardStuff.grid(sticky=E+W)
+
     def showPosts (self):
-        self.showPost(self.topPost, self.window, 0)
+        self.showPost(self.topPost, self.mainFrame, 0)
 
     def showPost (self, post, window, depth):
         indent = 30 * depth
@@ -264,8 +272,10 @@ class board:
         self.refreshWindows()
 
     def refreshWindows(self):
-        self.window.destroy()
-        self.startWindows()
+        self.mainFrame.destroy()
+        self.mainFrame = Frame(self.window)
+        self.mainFrame.grid()
+        self.showPosts()
 
     def likePost(self, post):
         post.like(self.curUser)
@@ -301,6 +311,22 @@ class board:
         post.children = sorted(post.children, reverse=True,
                 key = self.sortBySupports)
         return post.countSupports()
+
+    def setSortByHardStuff(self):
+        self.sortByHardStuff(self.topPost)
+        self.refreshWindows()
+    def sortByHardStuff(self, post):
+        post.children = sorted(post.children, reverse=True,
+                key = self.sortByHardStuff)
+
+        score = sum(child.score for child in post.children)
+        score += post.countLikes()
+        score += post.countRespects()
+        score += post.countSupports()
+        score -= post.countDislikes()
+
+        return score
+
 
 reds = group(0)
 blues = group(1)
