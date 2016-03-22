@@ -1,4 +1,5 @@
 from Tkinter import *
+from snap import *
 #postObj
 #
 # members:
@@ -30,9 +31,13 @@ class postObj:
     def initScores(self):
         self.groups = []
         self.likes = {}
+        self.likeList = []
         self.respects = {}
+        self.respectList = []
         self.supports = {}
+        self.supportList = []
         self.dislikes = {}
+        self.dislikeList = []
         for group in self.user.membership:
             self.groups.append(group)
             self.likes[group] = 0
@@ -91,10 +96,10 @@ class postObj:
 class user:
 
 
-    def __init__(self, username):
+    def __init__(self, username, ID):
         self.username = username
         self.email = "" #no email by default
-        self.ID = 0 #TODO: give unique IDs
+        self.ID = ID
         self.initGroups()
 
     def makePost(self, content, parent):
@@ -169,7 +174,6 @@ class board:
         self.showUsers()
         self.showRankWindow()
         self.window.mainloop()
-
 
     def showUsers(self):
         #show current user
@@ -327,6 +331,37 @@ class board:
 
         return score
 
+class BoardGraph():
+    def __init__(self, board):
+        self.hack = 15
+        self.biGraph = TNGraph.New()
+        self.initNodes(board)
+        self.initLinks(board)
+        self.graph = TUNGraph()
+        #Display stuff
+        print "look here!"
+        print self.biGraph.GetNodes()
+        print self.biGraph.GetEdges()
+        DrawGViz(self.biGraph, gvlDot, "graph2.png", "graph 1")
+        print "look here!"
+
+
+    def initNodes(self, board):
+        #user nodes
+        for user in board.users:
+            self.biGraph.AddNode(user.ID)
+        #post nodes
+        self.addPostNode(board.topPost)
+
+    def addPostNode(self, post):
+        for child in post.children:
+            self.addPostNode(child)
+        self.hack += 1
+        self.biGraph.AddNode(self.hack)
+        self.biGraph.AddEdge(post.user.ID, self.hack)
+
+    def initLinks(self, board):
+        return
 
 reds = group(0)
 blues = group(1)
@@ -338,9 +373,9 @@ groups = [reds, blues]
 redMember = {reds:1,blues:0}
 blueMember = {reds:0,blues:1}
 
-alice = user("Alice")
+alice = user("Alice", 1)
 alice.setGroups(redMember)
-bob = user("Bob")
+bob = user("Bob", 2)
 bob.setGroups(blueMember)
 
 users = [alice, bob]
@@ -350,4 +385,6 @@ bob.makePost("Bob says grr!", thread)
 alice.makePost("That isn't nice!", thread.children[0])
 
 forum = board(users,groups,thread)
+network = BoardGraph(forum)
 forum.startWindows()
+
