@@ -152,6 +152,7 @@ class board:
         self.groups = groups
         self.topPost = post
         self.curUser = users[0]
+        self.curID = self.topPost.ID + 1
 
     def addUser (self, user):
         if user not in self.users:
@@ -230,6 +231,8 @@ class board:
         self.showPost(self.topPost, self.mainFrame, 0)
 
     def showPost (self, post, window, depth):
+        print post.ID
+        print post.content
         indent = 30 * depth
         text = StringVar()
         data = StringVar()
@@ -272,8 +275,15 @@ class board:
         self.groups = groups
 
     def postReply(self, post):
-        post.user.makePost("temp reply", post)
+        self.curUser.makePost("temp reply", post)
+        post.children[-1].ID = self.curID
+        self.curID += 1
         self.refreshWindows()
+
+    def postReplySetup(self, post, text, user):
+        user.makePost(text, post)
+        post.children[-1].ID = self.curID
+        self.curID += 1
 
     def refreshWindows(self):
         self.mainFrame.destroy()
@@ -348,17 +358,20 @@ class BoardGraph():
 
     def initNodes(self, board):
         #user nodes
+        i=0
         for user in board.users:
             self.biGraph.AddNode(user.ID)
+            print user.ID
+            i = max(user.ID,i)
         #post nodes
-        self.addPostNode(board.topPost)
+        self.addPostNode(board.topPost, i)
 
-    def addPostNode(self, post):
+    def addPostNode(self, post, offset):
         for child in post.children:
-            self.addPostNode(child)
-        self.hack += 1
-        self.biGraph.AddNode(self.hack)
-        self.biGraph.AddEdge(post.user.ID, self.hack)
+            self.addPostNode(child, offset)
+        print post.ID
+        self.biGraph.AddNode(offset + post.ID + 1)
+        self.biGraph.AddEdge(post.user.ID, offset + 1 + post.ID)
 
     def initLinks(self, board):
         return
@@ -380,11 +393,11 @@ bob.setGroups(blueMember)
 
 users = [alice, bob]
 
-thread = postObj(alice, "Alice says hello!", 0)
-bob.makePost("Bob says grr!", thread)
-alice.makePost("That isn't nice!", thread.children[0])
-
+thread = postObj(alice, "Alice says hello!", 1)
 forum = board(users,groups,thread)
-network = BoardGraph(forum)
+forum.postReplySetup(thread, "Bob says grr!", bob)
+forum.postReplySetup(thread.children[0], "That isn't nice!", alice)
+
 forum.startWindows()
+network = BoardGraph(forum)
 
