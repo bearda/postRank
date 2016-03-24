@@ -1,5 +1,6 @@
 from Tkinter import *
 from snap import *
+from itertools import combinations
 #postObj
 #
 # members:
@@ -46,37 +47,41 @@ class postObj:
             self.dislikes[group] = 0
 
     def like(self, user):
+        self.likeList.append(user.ID)
         for group in user.membership:
             if group not in self.groups:
                 self.likes[group] = 0
             self.likes[group] += user.membership[group]
 
     def respect(self, user):
+        self.respectList.append(user.ID)
         for group in user.membership:
             if group not in self.groups:
                 self.respects[group] = 0
             self.respects[group] += user.membership[group]
 
     def support(self, user):
+        self.supportList.append(user.ID)
         for group in user.membership:
             if group not in self.groups:
                 self.supports[group] = 0
             self.supports[group] += user.membership[group]
 
     def dislike(self, user):
+        self.dislikeList.append(user.ID)
         for group in user.membership:
             if group not in self.groups:
                 self.dislikes[group] = 0
             self.dislikes[group] += user.membership[group]
 
     def countLikes(self):
-        return sum(x[1] for x in self.likes.items())
+        return len(self.likeList)
     def countRespects(self):
-        return sum(x[1] for x in self.respects.items())
+        return len(self.respectList)
     def countSupports(self):
-        return sum(x[1] for x in self.supports.items())
+        return len(self.supportList)
     def countDislikes(self):
-        return sum(x[1] for x in self.dislikes.items())
+        return len(self.dislikeList)
 
     def addChild(self, child):
         self.children.append(child)
@@ -343,38 +348,61 @@ class board:
 
 class BoardGraph():
     def __init__(self, board):
-        self.hack = 15
+        self.postStart = 0
         self.biGraph = TNGraph.New()
         self.initNodes(board)
-        self.initLinks(board)
-        self.graph = TUNGraph()
+        self.initLinks(board.topPost)
+        self.graph = TUNGraph.New()
         #Display stuff
         print "look here!"
         print self.biGraph.GetNodes()
         print self.biGraph.GetEdges()
-        DrawGViz(self.biGraph, gvlDot, "graph2.png", "graph 1")
+        DrawGViz(self.biGraph, gvlDot, "graph1.png", "graph 1")
         print "look here!"
+        self.projectBiGraph()
 
+        DrawGViz(self.graph, gvlNeato, "graph2.png", "graph 2", True)
 
     def initNodes(self, board):
         #user nodes
-        i=0
         for user in board.users:
             self.biGraph.AddNode(user.ID)
             print user.ID
-            i = max(user.ID,i)
+            self.postStart = max(self.postStart, user.ID)
         #post nodes
-        self.addPostNode(board.topPost, i)
+        self.postStart += 1
+        self.addPostNode(board.topPost)
 
-    def addPostNode(self, post, offset):
+    def addPostNode(self, post):
         for child in post.children:
-            self.addPostNode(child, offset)
+            self.addPostNode(child)
         print post.ID
-        self.biGraph.AddNode(offset + post.ID + 1)
-        self.biGraph.AddEdge(post.user.ID, offset + 1 + post.ID)
+        self.biGraph.AddNode(self.postStart + post.ID)
 
-    def initLinks(self, board):
-        return
+    def initLinks(self, post):
+        for child in post.children:
+            self.initLinks(child)
+
+        for like in post.likeList:
+            self.biGraph.AddEdge(like, self.postStart + post.ID)
+
+    def projectBiGraph(self):
+        #first, loop through every post node
+        for node in self.biGraph.Nodes():
+            #find everyone who links to it
+            if (node.GetId() < self.postStart):
+                self.graph.AddNode(node.GetId())
+            else:
+                neighbors = []
+                i = 0
+                while (i < node.GetInDeg()):
+                    if node.GetInNId(i) not in neighbors:
+                        neighbors.append(node.GetInNId(i))
+                    i += 1
+
+                for comb in combinations(neighbors, 2):
+                    self.graph.AddEdge(comb[0],comb[1])
+
 
 reds = group(0)
 blues = group(1)
